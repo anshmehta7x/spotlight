@@ -2,8 +2,16 @@
 #include "file_crawler.h"
 using namespace std;
 
-int main(){
+int main()
+{
     FileSystemCrawler crawler("/home");
-    crawler.crawl();
+    // crawler.initializing_crawl();
+
+    std::string query;
+    std::cout << "Enter search query: ";
+    std::cin >> query;
+    std::cout << "Searching for: '" << query << "'\n";
+
+    crawler.search(query);
     return 0;
 }
