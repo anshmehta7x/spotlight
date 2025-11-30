@@ -1,6 +1,7 @@
 #include "file_crawler.h"
 
 #include "ignored_folders.h"
+#include "util.h"
 
 namespace fs = std::filesystem;
 
@@ -90,9 +91,8 @@ void FileSystemCrawler::crawl(const string &root)
                     rec.absolute_path = file_path;
                     rec.extension = slice_after_last(file_path, '.');
                     rec.tokens = tokenize(file_path);
-
+                    trie_searcher.insert(rec.filename,rec.absolute_path, rec.extension);
                     file_batch.push_back(std::move(rec));
-
                     if (file_batch.size() >= BATCH_SIZE)
                     {
                         process_files(file_batch);
@@ -136,7 +136,7 @@ void FileSystemCrawler::process_files(std::vector<FileRecord> &files)
     db_wrapper.batch_insert_files(files);
 }
 
-void FileSystemCrawler::search(std::string &prefix,short offset) {
+void FileSystemCrawler::index_search(std::string &prefix,short offset) {
     std::vector<SQLiteWrapper::FileResult> results = db_wrapper.search(prefix, 10,offset);
 
     if (results.empty()) {
@@ -154,3 +154,24 @@ void FileSystemCrawler::search(std::string &prefix,short offset) {
     }
     std::cout << "\n";
 }
+
+void FileSystemCrawler::trie_search(std::string &prefix, int num_results) {
+    std::vector<FileInfo> search_results = trie_searcher.search_prefix_n_results(prefix, num_results);
+
+    if (search_results.empty()) {
+        std::cout << "No results for '" << prefix << "'\n";
+        return;
+    }
+
+    std::cout << "\nFound " << search_results.size() << " result(s):\n\n";
+
+    for (size_t i = 0; i < search_results.size(); ++i) {
+        const auto &result = search_results[i];
+        std::cout << std::setw(2) << (i + 1) << ". "
+                  << std::left << std::setw(30) << result.filename
+                  << " | " << result.absolute_path << "\n";
+    }
+    std::cout << "\n";
+}
+
+

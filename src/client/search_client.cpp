@@ -11,6 +11,8 @@ int main()
     std::cin >> query;
     std::cout << "Searching for: '" << query << "'\n";
 
-    crawler.search(query);
+    crawler.index_search(query);
+    std::cout << "-----------------------" << "\n";
+    crawler.trie_search(query);
     return 0;
 }
