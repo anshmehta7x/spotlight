@@ -39,7 +39,8 @@ public:
     bool is_ignorable(const string &folder_name);
     void process_files(std::vector<FileRecord> &files);
     void index_search(std::string &prefix, short offset = 0);
-    void trie_search(std::string &prefix, int num_results = 10);
+    // void trie_search(std::string &prefix, int num_results = 10);
+    TrieSearch& get_trie();
 
 };
 

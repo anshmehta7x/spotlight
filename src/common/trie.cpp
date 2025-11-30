@@ -1,6 +1,22 @@
 #include "trie.h"
 #include <queue>
 
+// Helper to write a string to a binary stream
+void write_string(std::ofstream& out, const std::string& s) {
+    size_t len = s.length();
+    out.write(reinterpret_cast<const char*>(&len), sizeof(len));
+    out.write(s.c_str(), len);
+}
+
+// Helper to read a string from a binary stream
+std::string read_string(std::ifstream& in) {
+    size_t len;
+    in.read(reinterpret_cast<char*>(&len), sizeof(len));
+    std::string s(len, '\0');
+    in.read(&s[0], len);
+    return s;
+}
+
 TrieNode::TrieNode() : is_leaf(false) {}
 
 TrieNode::~TrieNode() {
@@ -172,3 +188,68 @@ bool TrieSearch::remove_helper(TrieNode* node, const std::string& filename, int 
     return false;
 }
 
+void TrieSearch::save(const std::string& filename) {
+    std::ofstream out(filename, std::ios::binary);
+    if (!out) {
+        std::cerr << "Error opening file for writing: " << filename << std::endl;
+        return;
+    }
+    save_node(root, out);
+}
+
+void TrieSearch::load(const std::string& filename) {
+    std::ifstream in(filename, std::ios::binary);
+    if (!in) {
+        std::cerr << "Error opening file for reading: " << filename << std::endl;
+        return;
+    }
+    delete root;
+    root = load_node(in);
+}
+
+void TrieSearch::save_node(TrieNode* node, std::ofstream& out) {
+    bool is_leaf = node->check_leaf();
+    out.write(reinterpret_cast<const char*>(&is_leaf), sizeof(is_leaf));
+
+    if (is_leaf) {
+        FileInfo info = node->get_file_info();
+        write_string(out, info.filename);
+        write_string(out, info.absolute_path);
+        write_string(out, info.extension);
+    }
+
+    size_t num_children = node->get_children().size();
+    out.write(reinterpret_cast<const char*>(&num_children), sizeof(num_children));
+
+    for (auto const& [key, val] : node->get_children()) {
+        out.write(reinterpret_cast<const char*>(&key), sizeof(key));
+        save_node(val, out);
+    }
+}
+
+TrieNode* TrieSearch::load_node(std::ifstream& in) {
+    TrieNode* node = new TrieNode();
+    bool is_leaf;
+    in.read(reinterpret_cast<char*>(&is_leaf), sizeof(is_leaf));
+    node->set_leaf(is_leaf);
+
+    if (is_leaf) {
+        std::string filename = read_string(in);
+        std::string absolute_path = read_string(in);
+        std::string extension = read_string(in);
+        node->set_file_info(FileInfo(filename, absolute_path, extension));
+    }
+
+    size_t num_children;
+    in.read(reinterpret_cast<char*>(&num_children), sizeof(num_children));
+
+
+    for (size_t i = 0; i < num_children; ++i) {
+        char key;
+        in.read(reinterpret_cast<char*>(&key), sizeof(key));
+        TrieNode* child = load_node(in);
+        node->get_children()[key] = child;
+    }
+
+    return node;
+}

@@ -9,6 +9,9 @@
     #include <string>
     #include <vector>
 
+#include <iostream>
+#include <fstream>
+
 struct FileInfo {
     std::string filename;
     std::string absolute_path;
@@ -46,6 +49,8 @@ private:
     void collect_all_files(TrieNode* node, std::string prefix, std::vector<FileInfo>& results);
     void collect_n_files(TrieNode* node, const std::string& prefix, std::vector<FileInfo>& results, int n);
     bool remove_helper(TrieNode* node, const std::string& filename, int depth);
+    void save_node(TrieNode* node, std::ofstream& out);
+    TrieNode* load_node(std::ifstream& in);
 
 public:
     TrieSearch();
@@ -56,6 +61,8 @@ public:
     std::vector<FileInfo> search_prefix(const std::string& prefix);
     std::vector<FileInfo> search_prefix_n_results(const std::string& prefix, int num_results);
     bool remove(const std::string& filename);
+    void save(const std::string& filename);
+    void load(const std::string& filename);
 
 
 };

@@ -38,6 +38,8 @@ void re_index(FileSystemCrawler* fs) {
         log("beginning index at " + current_datetime());
         fs->initializing_crawl();
         log("created index at " + current_datetime());
+        fs->get_trie().save("/home/a7x/trie.dat");
+        log("saved trie to /home/a7x/trie.dat");
         std::this_thread::sleep_for(std::chrono::minutes(5));
     }
 }
