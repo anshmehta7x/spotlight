@@ -1,5 +1,7 @@
 #include "file_crawler.h"
 
+#include "ignored_folders.h"
+
 namespace fs = std::filesystem;
 
 std::unordered_set<std::string> tokenize(const std::string &str)
@@ -73,7 +75,7 @@ void FileSystemCrawler::crawl(const string &root)
                 if (entry.is_directory())
                 {
                     string folder_name = slice_after_last(entry.path().string(), '/');
-                    std::cout << "Folder: " << folder_name << '\n';
+                    // std::cout << "Folder: " << folder_name << '\n';
                     if (!is_ignorable(folder_name))
                     {
                         dirs.push(entry.path());
@@ -81,8 +83,7 @@ void FileSystemCrawler::crawl(const string &root)
                 }
                 else
                 {
-                    std::cout << "File: " << slice_after_last(entry.path().string(), '/') << '\n';
-
+                    // std::cout << "File: " << slice_after_last(entry.path().string(), '/') << '\n';
                     string file_path = entry.path().string();
                     FileRecord rec;
                     rec.filename = slice_after_last(file_path, '/');
@@ -123,6 +124,10 @@ bool FileSystemCrawler::is_ignorable(const string &folder_name)
 
 void FileSystemCrawler::initializing_crawl()
 {
+    // check if process has sudo
+    if (!check_sudo()) {
+        std::cerr << "You are not root.\n";
+    }
     crawl(root_path);
 }
 
@@ -131,8 +136,8 @@ void FileSystemCrawler::process_files(std::vector<FileRecord> &files)
     db_wrapper.batch_insert_files(files);
 }
 
-void FileSystemCrawler::search(std::string &prefix) {
-    std::vector<SQLiteWrapper::FileResult> results = db_wrapper.search(prefix, 10);
+void FileSystemCrawler::search(std::string &prefix,short offset) {
+    std::vector<SQLiteWrapper::FileResult> results = db_wrapper.search(prefix, 10,offset);
 
     if (results.empty()) {
         std::cout << "No results for '" << prefix << "'\n";

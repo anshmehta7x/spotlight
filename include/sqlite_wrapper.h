@@ -40,10 +40,10 @@ public:
     bool insert_token(const std::string &token, int fileid);
 
     void batch_insert_files(std::vector<FileRecord> &files);
-    void debug_print_tokens(int limit = 20) const;
-    void debug_print_files(int limit = 20) const;
+    // void debug_print_tokens(int limit = 20) const;
+    // void debug_print_files(int limit = 20) const;
 
-    std::vector<FileResult> search(const std::string &prefix,short limit) const;
+    std::vector<FileResult> search(const std::string &prefix,short limit, short offset) const;
 };
 
 #endif

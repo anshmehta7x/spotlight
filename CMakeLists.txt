@@ -10,19 +10,39 @@ set(CMAKE_C_COMPILER clang)
 add_compile_options(-stdlib=libc++)
 add_link_options(-stdlib=libc++)
 
-add_executable(indexer
-    src/indexer/main.cpp
-    src/indexer/file_crawler.cpp
-    src/indexer/sqlite_wrapper.cpp
-)
-
-target_include_directories(indexer PRIVATE
-    ${CMAKE_SOURCE_DIR}/include
-)
+include_directories(${CMAKE_SOURCE_DIR}/include)
 
 find_package(SQLite3 REQUIRED)
 
-target_link_libraries(indexer
-    PRIVATE
-        SQLite::SQLite3
+set(COMMON_SRC
+        src/common/file_crawler.cpp
+        src/common/sqlite_wrapper.cpp
 )
+
+set(COMMON_HEADERS
+        include/sqlite_wrapper.h
+        include/ignored_folders.h
+)
+
+add_executable(indexer
+        src/service/indexer_service.cpp
+        ${COMMON_SRC}
+        ${COMMON_HEADERS}
+        include/util.h
+        src/common/trie.cpp
+        include/trie.h
+)
+
+target_link_libraries(indexer PRIVATE SQLite::SQLite3)
+
+
+add_executable(search_client
+        src/client/search_client.cpp
+        ${COMMON_SRC}
+        ${COMMON_HEADERS}
+        include/util.h
+        src/common/trie.cpp
+        include/trie.h
+)
+
+target_link_libraries(search_client PRIVATE SQLite::SQLite3)

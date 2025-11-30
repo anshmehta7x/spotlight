@@ -234,61 +234,61 @@ void SQLiteWrapper::batch_insert_files(std::vector<FileRecord> &files)
     close_db(db);
 }
 
-void SQLiteWrapper::debug_print_tokens(int limit) const
-{
-    sqlite3 *db = open_db();
-    if (!db) return;
+// void SQLiteWrapper::debug_print_tokens(int limit) const
+// {
+//     sqlite3 *db = open_db();
+//     if (!db) return;
+//
+//     const char *sql = "SELECT token, fileid FROM fts_index LIMIT ?;";
+//     sqlite3_stmt *stmt;
+//
+//     if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK)
+//     {
+//         sqlite3_bind_int(stmt, 1, limit);
+//
+//         std::cout << "\n=== DEBUG: Tokens in database ===\n";
+//         while (sqlite3_step(stmt) == SQLITE_ROW)
+//         {
+//             const char* token = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+//             int fileid = sqlite3_column_int(stmt, 1);
+//             std::cout << "Token: '" << token << "' | FileID: " << fileid << "\n";
+//         }
+//         std::cout << "=================================\n\n";
+//     }
+//
+//     sqlite3_finalize(stmt);
+//     close_db(db);
+// }
+//
+// void SQLiteWrapper::debug_print_files(int limit) const
+// {
+//     sqlite3 *db = open_db();
+//     if (!db) return;
+//
+//     const char *sql = "SELECT fileid, filename, absolute_path FROM index_table LIMIT ?;";
+//     sqlite3_stmt *stmt;
+//
+//     if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK)
+//     {
+//         sqlite3_bind_int(stmt, 1, limit);
+//
+//         std::cout << "\n=== DEBUG: Files in database ===\n";
+//         while (sqlite3_step(stmt) == SQLITE_ROW)
+//         {
+//             int fileid = sqlite3_column_int(stmt, 0);
+//             const char* filename = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+//             const char* path = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+//             std::cout << "ID: " << fileid << " | File: '" << filename << "' | Path: " << path << "\n";
+//         }
+//         std::cout << "=================================\n\n";
+//     }
+//
+//     sqlite3_finalize(stmt);
+//     close_db(db);
+// }
+//
 
-    const char *sql = "SELECT token, fileid FROM fts_index LIMIT ?;";
-    sqlite3_stmt *stmt;
-
-    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK)
-    {
-        sqlite3_bind_int(stmt, 1, limit);
-
-        std::cout << "\n=== DEBUG: Tokens in database ===\n";
-        while (sqlite3_step(stmt) == SQLITE_ROW)
-        {
-            const char* token = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
-            int fileid = sqlite3_column_int(stmt, 1);
-            std::cout << "Token: '" << token << "' | FileID: " << fileid << "\n";
-        }
-        std::cout << "=================================\n\n";
-    }
-
-    sqlite3_finalize(stmt);
-    close_db(db);
-}
-
-void SQLiteWrapper::debug_print_files(int limit) const
-{
-    sqlite3 *db = open_db();
-    if (!db) return;
-
-    const char *sql = "SELECT fileid, filename, absolute_path FROM index_table LIMIT ?;";
-    sqlite3_stmt *stmt;
-
-    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK)
-    {
-        sqlite3_bind_int(stmt, 1, limit);
-
-        std::cout << "\n=== DEBUG: Files in database ===\n";
-        while (sqlite3_step(stmt) == SQLITE_ROW)
-        {
-            int fileid = sqlite3_column_int(stmt, 0);
-            const char* filename = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
-            const char* path = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
-            std::cout << "ID: " << fileid << " | File: '" << filename << "' | Path: " << path << "\n";
-        }
-        std::cout << "=================================\n\n";
-    }
-
-    sqlite3_finalize(stmt);
-    close_db(db);
-}
-
-
-std::vector<SQLiteWrapper::FileResult> SQLiteWrapper::search(const std::string &prefix, const short limit) const
+std::vector<SQLiteWrapper::FileResult> SQLiteWrapper::search(const std::string &prefix, const short limit, const short offset) const
 {
     sqlite3 *db = open_db();
     std::vector<FileResult> results;
@@ -302,7 +302,7 @@ std::vector<SQLiteWrapper::FileResult> SQLiteWrapper::search(const std::string &
         "FROM fts_index f "
         "JOIN index_table i ON f.rowid = i.fileid "
         "WHERE fts_index MATCH ? "
-        "LIMIT ?;";
+        "LIMIT ? OFFSET ?;";
 
     sqlite3_stmt *stmt;
     if (sqlite3_prepare_v2(db, q.c_str(), -1, &stmt, nullptr) != SQLITE_OK)
@@ -314,6 +314,7 @@ std::vector<SQLiteWrapper::FileResult> SQLiteWrapper::search(const std::string &
 
     sqlite3_bind_text(stmt, 1, search_term.c_str(), -1, SQLITE_TRANSIENT);
     sqlite3_bind_int(stmt, 2, limit);
+    sqlite3_bind_int(stmt, 3, offset);
 
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {

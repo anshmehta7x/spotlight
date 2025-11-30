@@ -5,7 +5,6 @@ using namespace std;
 int main()
 {
     FileSystemCrawler crawler("/home");
-    // crawler.initializing_crawl();
 
     std::string query;
     std::cout << "Enter search query: ";
