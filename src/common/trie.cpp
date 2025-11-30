@@ -1,14 +1,12 @@
 #include "trie.h"
 #include <queue>
 
-// Helper to write a string to a binary stream
 void write_string(std::ofstream& out, const std::string& s) {
     size_t len = s.length();
     out.write(reinterpret_cast<const char*>(&len), sizeof(len));
     out.write(s.c_str(), len);
 }
 
-// Helper to read a string from a binary stream
 std::string read_string(std::ifstream& in) {
     size_t len;
     in.read(reinterpret_cast<char*>(&len), sizeof(len));
@@ -75,7 +73,7 @@ void TrieSearch::insert(const std::string& filename, const std::string& absolute
     TrieNode* current = root;
 
     for (char c : filename) {
-        current = current->add_child(c);
+        current = current->add_child(std::tolower(c));
     }
 
     current->set_leaf(true);
@@ -86,7 +84,7 @@ bool TrieSearch::search(const std::string& filename) {
     TrieNode* current = root;
 
     for (char c : filename) {
-        current = current->get_child(c);
+        current = current->get_child(std::tolower(c));
         if (current == nullptr) {
             return false;
         }
@@ -100,7 +98,7 @@ std::vector<FileInfo> TrieSearch::search_prefix(const std::string& prefix) {
     TrieNode* current = root;
 
     for (char c : prefix) {
-        current = current->get_child(c);
+        current = current->get_child(std::tolower(c));
         if (current == nullptr) {
             return results;
         }
@@ -116,7 +114,7 @@ std::vector<FileInfo> TrieSearch::search_prefix_n_results(const std::string& pre
     TrieNode* current = root;
 
     for (char c : prefix) {
-        current = current->get_child(c);
+        current = current->get_child(std::tolower(c));
         if (current == nullptr) {
             return results;
         }
@@ -177,7 +175,7 @@ bool TrieSearch::remove_helper(TrieNode* node, const std::string& filename, int 
         return node->get_children().empty();
     }
 
-    char c = filename[depth];
+    char c = std::tolower(filename[depth]);
     TrieNode* child = node->get_child(c);
 
     if (remove_helper(child, filename, depth + 1)) {
@@ -242,7 +240,6 @@ TrieNode* TrieSearch::load_node(std::ifstream& in) {
 
     size_t num_children;
     in.read(reinterpret_cast<char*>(&num_children), sizeof(num_children));
-
 
     for (size_t i = 0; i < num_children; ++i) {
         char key;
