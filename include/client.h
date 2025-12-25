@@ -1,7 +1,3 @@
-//
-// Created by a7x on 23/12/2025.
-//
-
 #ifndef SPOTLIGHT_CLIENT_H
 #define SPOTLIGHT_CLIENT_H
 
@@ -16,8 +12,8 @@ private:
 
 public:
     virtual bool OnInit() override;
-    void indexSearch(std::string &query);
-    void trieSearch(std::string &prefix, int num_results=10);
+    std::vector<SQLiteWrapper::FileResult> indexSearch(std::string &query);
+    std::vector<FileInfo> trieSearch(std::string &prefix, int num_results=10);
 };
 
-#endif //SPOTLIGHT_CLIENT_H
+#endif

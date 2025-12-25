@@ -12,7 +12,15 @@ public:
 
 private:
     wxPanel* panel;
+
+    wxButton* syncButton;
+    void onSyncClicked(wxCommandEvent& event);
+
     wxTextCtrl* textInput;
+    wxScrolledWindow* scrollableOutput;
+    wxBoxSizer* resultsSizer;
+
+
     std::string query;
     void onTextInput(wxCommandEvent& event);
 

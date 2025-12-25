@@ -76,7 +76,6 @@ void FileSystemCrawler::crawl(const string &root)
                 if (entry.is_directory())
                 {
                     string folder_name = slice_after_last(entry.path().string(), '/');
-                    // std::cout << "Folder: " << folder_name << '\n';
                     if (!is_ignorable(folder_name))
                     {
                         dirs.push(entry.path());
@@ -84,7 +83,6 @@ void FileSystemCrawler::crawl(const string &root)
                 }
                 else
                 {
-                    // std::cout << "File: " << slice_after_last(entry.path().string(), '/') << '\n';
                     string file_path = entry.path().string();
                     FileRecord rec;
                     rec.filename = slice_after_last(file_path, '/');
@@ -124,7 +122,6 @@ bool FileSystemCrawler::is_ignorable(const string &folder_name)
 
 void FileSystemCrawler::initializing_crawl()
 {
-    // check if process has sudo
     if (!check_sudo()) {
         std::cerr << "You are not root.\n";
     }
@@ -136,46 +133,10 @@ void FileSystemCrawler::process_files(std::vector<FileRecord> &files)
     db_wrapper.batch_insert_files(files);
 }
 
-void FileSystemCrawler::index_search(std::string &prefix,short offset) {
-    std::vector<SQLiteWrapper::FileResult> results = db_wrapper.search(prefix, 10,offset);
-
-    if (results.empty()) {
-        std::cout << "No results for '" << prefix << "'\n";
-        return;
-    }
-
-    std::cout << "\nFound " << results.size() << " result(s):\n\n";
-
-    for (size_t i = 0; i < results.size(); ++i) {
-        const auto &result = results[i];
-        std::cout << std::setw(2) << (i + 1) << ". "
-                  << std::left << std::setw(30) << result.filename
-                  << " | " << result.absolute_path << "\n";
-    }
-    std::cout << "\n";
+std::vector<SQLiteWrapper::FileResult> FileSystemCrawler::index_search(std::string &prefix,short offset) {
+    return db_wrapper.search(prefix, 10, offset);
 }
-//
-// void FileSystemCrawler::trie_search(std::string &prefix, int num_results) {
-//     std::vector<FileInfo> search_results = trie_searcher.search_prefix_n_results(prefix, num_results);
-//
-//     if (search_results.empty()) {
-//         std::cout << "No results for '" << prefix << "'\n";
-//         return;
-//     }
-//
-//     std::cout << "\nFound " << search_results.size() << " result(s):\n\n";
-//
-//     for (size_t i = 0; i < search_results.size(); ++i) {
-//         const auto &result = search_results[i];
-//         std::cout << std::setw(2) << (i + 1) << ". "
-//                   << std::left << std::setw(30) << result.filename
-//                   << " | " << result.absolute_path << "\n";
-//     }
-//     std::cout << "\n";
-// }
 
 TrieSearch& FileSystemCrawler::get_trie() {
     return trie_searcher;
 }
-
-
