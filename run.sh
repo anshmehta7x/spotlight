@@ -1,4 +1,4 @@
 cd build
 cmake ..
 make
-./indexer
+./search_client

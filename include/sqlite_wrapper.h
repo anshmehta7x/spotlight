@@ -8,8 +8,6 @@
 
 struct FileRecord;
 
-
-
 class SQLiteWrapper
 {
 private:
